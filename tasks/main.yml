@@ -1,0 +1,17 @@
+- set_fact:
+    iambootstrap: "{{inventory_hostname}}"
+  run_once: True
+
+- debug:
+    msg: "bootstrap to: {{iambootstrap}}"
+
+- debug:
+    msg: "{{app}}"
+
+- block:
+  - name: install consul
+    yum:
+      name: consul
+      state: installed
+  become: True
+  become_user: root

@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: exphost.create_user
+    vars:
+      user: "{{app.value.consul.user}}"
