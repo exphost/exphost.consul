@@ -1,0 +1,11 @@
+- block:
+  - name: copy config
+    template:
+      src: config.json
+      dest: "{{app.value.consul.user.home}}/consul/conf/config.json"
+  become: True
+  become_user: "{{app.value.consul.user.user}}"
+
+- name: Wait for consul
+  wait_for:
+    port: "{{app.value.consul.configs.ports.http}}"

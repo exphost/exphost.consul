@@ -1,0 +1,23 @@
+{
+  "datacenter": "dc-123",
+  "data_dir": "{{app.value.consul.user.home}}/consul/data",
+  "log_level": "INFO",
+  "node_name": "{{inventory_hostname}}",
+  "ports": {
+      "http": {{app.value.consul.configs.ports.http}},
+      "dns": {{app.value.consul.configs.ports.dns}},
+      "server": {{app.value.consul.configs.ports.server}},
+      "serf_lan": {{app.value.consul.configs.ports.serf_lan}},
+      "serf_wan": {{app.value.consul.configs.ports.serf_wan}}
+  },
+  "server": true,
+  "telemetry": {
+     "statsite_address": "127.0.0.1:2180"
+  },
+  "advertise_addr": "{{ansible_default_ipv4['address']}}",
+  "advertise_addr_wan": "{{ansible_default_ipv4['address']}}",
+  "bind_addr": "0.0.0.0",
+  "client_addr": "0.0.0.0",
+  "ui": true,
+  "bootstrap": true
+}

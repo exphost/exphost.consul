@@ -1,10 +1,3 @@
-- set_fact:
-    iambootstrap: "{{inventory_hostname}}"
-  run_once: True
-
-- debug:
-    msg: "bootstrap to: {{iambootstrap}}"
-
 - debug:
     msg: "{{app}}"
 
@@ -13,5 +6,32 @@
     yum:
       name: consul
       state: installed
+  - name: install dig
+    yum:
+      name: bind-utils
+      state: installed
   become: True
   become_user: root
+
+- block:
+  - name: create consul dirs
+    file:
+      path: "{{app.value.consul.user.home}}/consul/{{item}}"
+      state: directory
+    loop:
+    - conf
+    - data
+    - var
+  become: True
+  become_user: "{{app.value.consul.user.user}}"
+
+- name: look for consul
+  command: dig consul.service.consul +short
+  register: _consul_servers
+  changed_when: False
+- set_fact:
+    _need_bootstrap: "{{_consul_servers.stdout == ''}}"
+
+- include_tasks: init.yml
+  when: _need_bootstrap
+  run_once: True
