@@ -7,11 +7,13 @@
   "ports": {
       "http": {{app.value.consul.configs.ports.http}},
       "dns": {{app.value.consul.configs.ports.dns}},
+{% if app.value.consul.configs.server %}
       "server": {{app.value.consul.configs.ports.server}},
+{% endif %}
       "serf_lan": {{app.value.consul.configs.ports.serf_lan}},
       "serf_wan": {{app.value.consul.configs.ports.serf_wan}}
   },
-  "server": true,
+  "server": {{app.value.consul.configs.server|lower}},
   "telemetry": {
      "statsite_address": "127.0.0.1:2180"
   },

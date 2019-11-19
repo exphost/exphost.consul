@@ -63,14 +63,14 @@
     _need_bootstrap: "{{_consul_servers.stdout == '' and not _consul_node_id_file.stat.exists }}"
 
 - include_tasks: init.yml
-  when: _need_bootstrap
+  when: _need_bootstrap and app.value.consul.configs.server|default(False)
   run_once: True
 
 - pause:
     seconds: 5
 
 - name: look for consul
-  command: dig consul_serf_lan.service.consul srv +short
+  command: dig consul_server_serf_lan.service.consul srv +short
   register: _consul_servers
   changed_when: False
   check_mode: False
