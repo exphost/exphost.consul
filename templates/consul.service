@@ -1,0 +1,13 @@
+[Unit]
+Description=Consul service
+After=network.target
+
+[Service]
+Type=notify
+User={{app.value.consul.user.user}}
+WorkingDirectory={{app.value.consul.user.home}}/consul
+ExecStart={{app.value.consul.user.home}}/consul/bin/startup.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

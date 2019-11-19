@@ -1,10 +1,20 @@
 - block:
   - name: copy config
+    vars:
+      _bootstrap: true
+      _consul_servers: []
     template:
       src: config.json
       dest: "{{app.value.consul.user.home}}/consul/conf/config.json"
   become: True
   become_user: "{{app.value.consul.user.user}}"
+
+- block:
+  - service:
+      name: "{{app.value.consul.user.user}}-consul"
+      state: started
+  become: True
+  become_user: root
 
 - name: Wait for consul
   wait_for:

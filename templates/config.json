@@ -2,6 +2,7 @@
   "datacenter": "dc-123",
   "data_dir": "{{app.value.consul.user.home}}/consul/data",
   "log_level": "INFO",
+  "enable_script_checks": true,
   "node_name": "{{inventory_hostname}}",
   "ports": {
       "http": {{app.value.consul.configs.ports.http}},
@@ -19,5 +20,10 @@
   "bind_addr": "0.0.0.0",
   "client_addr": "0.0.0.0",
   "ui": true,
-  "bootstrap": true
+  "bootstrap": {{_bootstrap|lower}},
+  "retry_join": [
+{% for server in _consul_servers.stdout_lines|sort %}
+    "{{server.split()[3]}}:{{server.split()[2]}}"{% if not loop.last %},{% endif %}
+{% endfor %}
+  ]
 }

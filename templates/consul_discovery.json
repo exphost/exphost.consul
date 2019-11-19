@@ -1,0 +1,55 @@
+{
+  "services": [
+  {
+    "name": "consul_serf_lan",
+    "tags": ["consul"],
+    "port": {{app.value.consul.configs.ports.serf_lan}},
+    "checks": [
+    {
+      "tcp": "localhost:{{app.value.consul.configs.ports.serf_lan}}",
+      "interval": "5s",
+      "timeout": "1s"
+    }
+    ]
+  },
+  {
+    "name": "consul_serf_wan",
+    "tags": ["consul"],
+    "port": {{app.value.consul.configs.ports.serf_wan}},
+    "checks": [
+    {
+      "tcp": "localhost:{{app.value.consul.configs.ports.serf_wan}}",
+      "interval": "5s",
+      "timeout": "1s"
+    }
+    ]
+  }
+{% if app.value.consul.configs.server %}
+  ,
+  {
+    "name": "consul_server",
+    "tags": ["consul", "server", "consul_server"],
+    "port": {{app.value.consul.configs.ports.server}},
+    "checks": [
+    {
+      "tcp": "localhost:{{app.value.consul.configs.ports.server}}",
+      "interval": "5s",
+      "timeout": "1s"
+    }
+    ]
+  },
+  {
+    "name": "consul_server_serf_wan",
+    "tags": ["consul","server", "consul_server"],
+    "port": {{app.value.consul.configs.ports.serf_wan}},
+    "checks": [
+    {
+      "tcp": "localhost:{{app.value.consul.configs.ports.serf_wan}}",
+      "interval": "5s",
+      "timeout": "1s"
+    }
+    ]
+  }
+{% endif %}
+  ]
+}
