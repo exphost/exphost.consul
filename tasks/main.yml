@@ -105,3 +105,4 @@
 - name: Wait for consul
   wait_for:
     port: "{{app.value.consul.configs.ports.http}}"
+- include_tasks: incron.yml
