@@ -3,7 +3,7 @@
   "data_dir": "{{app.value.consul.user.home}}/consul/data",
   "log_level": "INFO",
   "enable_script_checks": true,
-  "node_name": "{{inventory_hostname}}",
+  "node_name": "{{inventory_hostname}}-{{app.value.consul.configs.ports.http}}",
   "ports": {
       "http": {{app.value.consul.configs.ports.http}},
       "dns": {{app.value.consul.configs.ports.dns}},
