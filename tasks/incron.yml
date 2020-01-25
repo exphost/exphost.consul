@@ -3,6 +3,11 @@
     yum:
       name: incron
       state: installed
+  - name: start incrond
+    service:
+      name: incrond
+      state: started
+      enabled: True
   - name: copy incron config
     lineinfile:
       path: /var/spool/incron/root
