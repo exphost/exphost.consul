@@ -2,10 +2,18 @@
     msg: "{{app}}"
 
 - block:
-  - name: install consul
-    yum:
-      name: consul
-      state: installed
+  - block:
+    - name: install consul
+      yum:
+        name: consul
+        state: installed
+    rescue:
+      - name: clear yum cache
+        command: yum clean all
+      - name: install consul
+        yum:
+          name: consul
+          state: installed
 
   - name: install dig
     yum:
