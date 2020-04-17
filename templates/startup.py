@@ -4,7 +4,11 @@ import time
 import subprocess
 import sys
 
-p = subprocess.Popen(["consul", "agent", "-config-dir", "{{app.value.consul.user.home}}/consul/conf", "-config-dir", "/app/shared/consul/conf"], stdout=subprocess.PIPE, stderr=sys.stdout.fileno())
+cmd = ["consul", "agent", "-config-dir", "{{app.value.consul.user.home}}/consul/conf"]
+{% if not app.value.consul.configs.server|default(False) %}
+cmd.extend(["-config-dir", "/app/shared/consul/conf"])
+{% endif %}
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=sys.stdout.fileno())
 
 while True:
     line = p.stdout.readline()
