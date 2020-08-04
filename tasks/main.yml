@@ -97,7 +97,7 @@
   - name: copy consul discovery
     template:
       src: consul_discovery.json
-      dest: "/app/shared/consul/conf/consul_discovery_{{app.key}}.json"
+      dest: "{{app.value.consul.user.home}}/consul/conf"
     notify:
       - restart consul
   become: True
