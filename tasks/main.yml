@@ -94,12 +94,13 @@
   become: True
   become_user: "{{app.value.consul.user.user}}"
 - block:
-  - name: copy consul discovery
+  - name: copy consul self discovery
     template:
       src: consul_discovery.json
       dest: "{{app.value.consul.user.home}}/consul/conf"
     notify:
       - restart consul
+    when: app.value.consul.configs.server|default(False)
   become: True
   become_user: root
 - meta: flush_handlers
