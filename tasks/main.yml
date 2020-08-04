@@ -60,7 +60,7 @@
       path: "{{app.value.consul.user.home}}/consul/data/node-id"
     register: _consul_node_id_file
   - name: look for consul
-    command: dig consul.service.consul srv +short
+    command: dig consul_server_serf_lan.service.consul srv +short
     register: _consul_servers
     changed_when: False
     check_mode: False
