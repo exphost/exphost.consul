@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python{{ "3" if ansible_distribution_major_version == "8" }}
 import systemd.daemon
 import time
 import subprocess
@@ -11,7 +11,7 @@ cmd.extend(["-config-dir", "/app/shared/consul/conf"])
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=sys.stdout.fileno())
 
 while True:
-    line = p.stdout.readline()
+    line = str(p.stdout.readline())
     print(line)
     if "Consul agent running!" in line:
         break
