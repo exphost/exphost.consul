@@ -3,17 +3,15 @@
 
 - block:
   - block:
-    - name: install consul
+    - name: install unzip
       yum:
-        name: consul
+        name: unzip
         state: installed
-    rescue:
-      - name: clear yum cache
-        command: yum clean all
-      - name: install consul
-        yum:
-          name: consul
-          state: installed
+    - name: install consul
+      unarchive:
+        src: https://releases.hashicorp.com/consul/1.9.0/consul_1.9.0_linux_amd64.zip
+        dest: /usr/bin
+        remote_src: true
 
   - name: install dig
     yum:
@@ -59,13 +57,29 @@
     stat:
       path: "{{app.value.consul.user.home}}/consul/data/node-id"
     register: _consul_node_id_file
+
   - name: look for consul
     command: dig consul_server_serf_lan.service.consul srv +short
     register: _consul_servers
     changed_when: False
     check_mode: False
+    failed_when: False
+    retries: 10
+    delay: 1
+    until: _consul_servers.stdout
   become: True
   become_user: "{{app.value.consul.user.user}}"
+
+- block:
+  - name: copy consul self discovery
+    template:
+      src: consul_discovery.json
+      dest: "{{app.value.consul.user.home}}/consul/conf"
+    notify:
+      - restart consul
+    when: app.value.consul.configs.server|default(False)
+  become: True
+  become_user: root
 
 - set_fact:
     _need_bootstrap: "{{_consul_servers.stdout == '' and not _consul_node_id_file.stat.exists }}"
@@ -82,6 +96,11 @@
   register: _consul_servers
   changed_when: False
   check_mode: False
+  failed_when: False
+  retries: 30
+  delay: 1
+  until: _consul_servers.stdout
+
 - block:
   - name: copy consul.config
     vars:
@@ -93,16 +112,6 @@
       - restart consul
   become: True
   become_user: "{{app.value.consul.user.user}}"
-- block:
-  - name: copy consul self discovery
-    template:
-      src: consul_discovery.json
-      dest: "{{app.value.consul.user.home}}/consul/conf"
-    notify:
-      - restart consul
-    when: app.value.consul.configs.server|default(False)
-  become: True
-  become_user: root
 - meta: flush_handlers
 - block:
   - service:
