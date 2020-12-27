@@ -1,21 +1,24 @@
+---
 - block:
-  - name: copy config
-    vars:
-      _bootstrap: true
-      _consul_servers: []
-    template:
-      src: config.json
-      dest: "{{app.value.consul.user.home}}/consul/conf/config.json"
-  become: True
-  become_user: "{{app.value.consul.user.user}}"
+    - name: copy config
+      vars:
+        _bootstrap: true
+        _consul_servers: []
+      template:
+        src: config.json
+        dest: "{{ app.value.consul.user.home }}/consul/conf/config.json"
+        mode: 0644
+  become: true
+  become_user: "{{ app.value.consul.user.user }}"
 
 - block:
-  - service:
-      name: "{{app.value.consul.user.user}}-consul"
-      state: started
-  become: True
+    - name: start consul
+      service:
+        name: "{{ app.value.consul.user.user }}-consul"
+        state: started
+  become: true
   become_user: root
 
 - name: Wait for consul
   wait_for:
-    port: "{{app.value.consul.configs.ports.http}}"
+    port: "{{ app.value.consul.configs.ports.http }}"

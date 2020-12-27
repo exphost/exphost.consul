@@ -1,126 +1,135 @@
+---
 - debug:
-    msg: "{{app}}"
+    msg: "{{ app }}"
 
 - block:
-  - block:
-    - name: install unzip
+    - block:
+        - name: install unzip
+          yum:
+            name: unzip
+            state: installed
+        - name: install consul
+          unarchive:
+            src: https://releases.hashicorp.com/consul/1.9.0/consul_1.9.0_linux_amd64.zip
+            dest: /usr/bin
+            remote_src: true
+
+    - name: install dig
       yum:
-        name: unzip
+        name: bind-utils
         state: installed
-    - name: install consul
-      unarchive:
-        src: https://releases.hashicorp.com/consul/1.9.0/consul_1.9.0_linux_amd64.zip
-        dest: /usr/bin
-        remote_src: true
+    - name: install systemd-python
+      yum:
+        name: systemd-python
+        state: installed
 
-  - name: install dig
-    yum:
-      name: bind-utils
-      state: installed
-  - name: install systemd-python
-    yum:
-      name: systemd-python
-      state: installed
-
-  - name: copy service script
-    template:
-      src: consul.service
-      dest: "/etc/systemd/system/{{app.value.consul.user.user}}-consul.service"
-  - name: create shared dir for consul scripts
-    file:
-      path: "/app/shared/consul/{{item}}"
-      state: directory
-    loop:
-      - conf
-      - bin
-  become: True
+    - name: copy service script
+      template:
+        src: consul.service
+        dest: "/etc/systemd/system/{{ app.value.consul.user.user }}-consul.service"
+        mode: 0644
+    - name: create shared dir for consul scripts
+      file:
+        path: "/app/shared/consul/{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - conf
+        - bin
+  become: true
   become_user: root
 
 - block:
-  - name: create consul dirs
-    file:
-      path: "{{app.value.consul.user.home}}/consul/{{item}}"
-      state: directory
-    loop:
-    - conf
-    - data
-    - var
-    - bin
-  - name: copy startup script
-    template:
-      src: startup.py
-      dest: "{{app.value.consul.user.home}}/consul/bin"
-      mode: 0755
-    notify: restart consul
+    - name: create consul dirs
+      file:
+        path: "{{ app.value.consul.user.home }}/consul/{{ item }}"
+        state: directory
+        mode: 0755
+      loop:
+        - conf
+        - data
+        - var
+        - bin
+    - name: copy startup script
+      template:
+        src: startup.py
+        dest: "{{ app.value.consul.user.home }}/consul/bin"
+        mode: 0755
+      notify: restart consul
 
-  - name: look for data content
-    stat:
-      path: "{{app.value.consul.user.home}}/consul/data/node-id"
-    register: _consul_node_id_file
+    - name: look for data content
+      stat:
+        path: "{{ app.value.consul.user.home }}/consul/data/node-id"
+      register: _consul_node_id_file
 
-  - name: look for consul
-    command: dig consul_server_serf_lan.service.consul srv +short
-    register: _consul_servers
-    changed_when: False
-    check_mode: False
-    failed_when: False
-    retries: 10
-    delay: 1
-    until: _consul_servers.stdout
-  become: True
-  become_user: "{{app.value.consul.user.user}}"
+    - name: look for consul
+      command: dig consul_server_serf_lan.service.consul srv +short
+      register: _consul_servers
+      changed_when: false
+      check_mode: false
+      failed_when: false
+      retries: 10
+      delay: 1
+      until: _consul_servers.stdout
+  become: true
+  become_user: "{{ app.value.consul.user.user }}"
 
 - block:
-  - name: copy consul self discovery
-    template:
-      src: consul_discovery.json
-      dest: "{{app.value.consul.user.home}}/consul/conf"
-    notify:
-      - restart consul
-    when: app.value.consul.configs.server|default(False)
-  become: True
+    - name: copy consul self discovery
+      template:
+        src: consul_discovery.json
+        dest: "{{ app.value.consul.user.home }}/consul/conf"
+        mode: 0644
+      notify:
+        - restart consul
+      when: app.value.consul.configs.server|default(false)
+  become: true
   become_user: root
 
-- set_fact:
-    _need_bootstrap: "{{_consul_servers.stdout == '' and not _consul_node_id_file.stat.exists }}"
+- name: set bootstrap flag
+  set_fact:
+    _need_bootstrap: "{{ not _consul_servers.stdout and not _consul_node_id_file.stat.exists }}"
 
 - include_tasks: init.yml
-  when: _need_bootstrap and app.value.consul.configs.server|default(False)
-  run_once: True
+  when: _need_bootstrap and app.value.consul.configs.server|default(false)
+  run_once: true
 
-- pause:
+- name: wait 5 sec
+  pause:
     seconds: 5
 
 - name: look for consul
   command: dig consul_server_serf_lan.service.consul srv +short
   register: _consul_servers
-  changed_when: False
-  check_mode: False
-  failed_when: False
+  changed_when: false
+  check_mode: false
+  failed_when: false
   retries: 30
   delay: 1
   until: _consul_servers.stdout
 
 - block:
-  - name: copy consul.config
-    vars:
-      _bootstrap: false
-    template:
-      src: config.json
-      dest: "{{app.value.consul.user.home}}/consul/conf/config.json"
-    notify:
-      - restart consul
-  become: True
-  become_user: "{{app.value.consul.user.user}}"
+    - name: copy consul.config
+      vars:
+        _bootstrap: false
+      template:
+        src: config.json
+        dest: "{{ app.value.consul.user.home }}/consul/conf/config.json"
+        mode: 0644
+      notify:
+        - restart consul
+  become: true
+  become_user: "{{ app.value.consul.user.user }}"
 - meta: flush_handlers
 - block:
-  - service:
-      name: "{{app.value.consul.user.user}}-consul"
-      state: started
-  become: True
+    - name: start consul
+      service:
+        name: "{{ app.value.consul.user.user }}-consul"
+        state: started
+  become: true
   become_user: root
 
 - name: Wait for consul
   wait_for:
-    port: "{{app.value.consul.configs.ports.http}}"
+    port: "{{ app.value.consul.configs.ports.http }}"
 - include_tasks: incron.yml

@@ -1,6 +1,7 @@
+---
 - name: restart consul
   service:
-    name: "{{app.value.consul.user.user}}-consul"
+    name: "{{ app.value.consul.user.user }}-consul"
     state: restarted
-  become: True
+  become: true
   become_user: root

@@ -14,9 +14,9 @@ galaxy_info:
     - fabsible
     - consul
 
-allow_duplicates: True
+allow_duplicates: true
 
 dependencies:
   - role: exphost.create_user
     vars:
-      user: "{{app.value.consul.user}}"
+      user: "{{ app.value.consul.user }}"
