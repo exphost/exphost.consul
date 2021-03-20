@@ -13,10 +13,11 @@
       lineinfile:
         path: /var/spool/incron/root
         create: true
+        regexp: ".*# consul shared scripts - restart {{ app.value.consul.user.user }}"
         line: >
           /app/shared/consul/
           IN_MOVED_TO,IN_CLOSE_WRITE,IN_DELETE
           (systemctl restart {{ app.value.consul.user.user }}-consul; date)
-          >> /tmp/incrond.txt 2>&1"
+          >> /tmp/incrond.txt 2>&1" # consul shared scripts - restart {{ app.value.consul.user.user }}
         mode: 0644
   become: true
