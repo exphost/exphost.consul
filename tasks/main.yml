@@ -9,8 +9,10 @@
             name: unzip
             state: installed
         - name: install consul
+          vars:
+            _version: "{{ app.value.consul.configs.version }}"
           unarchive:
-            src: https://releases.hashicorp.com/consul/1.9.0/consul_1.9.0_linux_amd64.zip
+            src: "https://releases.hashicorp.com/consul/{{ _version }}/consul_{{ _version }}_linux_amd64.zip"
             dest: /usr/bin
             remote_src: true
 
