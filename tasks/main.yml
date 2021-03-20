@@ -137,6 +137,7 @@
       service:
         name: "{{ app.value.consul.user.user }}-consul"
         state: started
+        enabled: true
   become: true
   become_user: root
 
