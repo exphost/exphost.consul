@@ -19,4 +19,3 @@ apps_consul_client:
         addresses:
           client: "0.0.0.0"
           cluster: "0.0.0.0"
-
